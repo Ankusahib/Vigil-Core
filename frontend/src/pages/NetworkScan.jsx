@@ -16,7 +16,8 @@ import {
   PieChart as PieChartIcon,
   Zap,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Download
 } from 'lucide-react';
 import { 
   BarChart,
@@ -117,6 +118,29 @@ const NetworkScan = () => {
     return () => clearInterval(interval);
   }, [state, taskId]);
 
+  const downloadReportToFolder = async (reportData, defaultFilename) => {
+    try {
+      if (window.showDirectoryPicker) {
+        const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+        const fileHandle = await dirHandle.getFileHandle(defaultFilename, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(JSON.stringify(reportData, null, 2));
+        await writable.close();
+        alert(`Report successfully downloaded to the selected folder as ${defaultFilename}`);
+      } else {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reportData, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", defaultFilename);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+      }
+    } catch (err) {
+      console.error("Download failed or was cancelled:", err);
+    }
+  };
+
   const fetchResults = async () => {
     try {
       // Get the latest run artifacts via consolidated endpoint
@@ -183,20 +207,48 @@ const NetworkScan = () => {
     }
   };
 
+  const downloadAsPDF = () => {
+    import('html2pdf.js').then((html2pdf) => {
+      const element = document.getElementById('report-container');
+      const opt = {
+        margin: 0.5,
+        filename: `network_report_${file?.name || 'scan'}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf.default().set(opt).from(element).save();
+    });
+  };
+
   if (state === 'result') {
     return (
-      <div className="space-y-6 animate-in fade-in duration-700">
+      <div id="report-container" className="space-y-6 animate-in fade-in duration-700">
         <div className="flex justify-between items-end">
           <div className="flex flex-col">
             <h2 className="text-3xl font-black italic text-white tracking-tighter uppercase">Network Forensics Report</h2>
             <p className="text-slate-400 text-sm">Deep Packet Inspection complete for {file?.name}</p>
           </div>
-          <button 
-            onClick={() => setState('idle')}
-            className="px-4 py-2 bg-primary text-background font-black uppercase tracking-widest text-[10px] rounded"
-          >
-            New Analysis
-          </button>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => downloadAsPDF()}
+              className="flex items-center gap-2 px-6 py-3 bg-danger text-background font-black uppercase tracking-widest text-[10px] rounded-2xl hover:scale-105 transition-all"
+            >
+              <Download className="w-4 h-4 text-white" /> Download PDF
+            </button>
+            <button 
+              onClick={() => downloadReportToFolder({ attackStory, hostProfiles, incidents, stats, iocs }, `network_report_${file?.name || 'scan'}.json`)}
+              className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 hover:border-primary rounded-2xl transition-all font-black uppercase text-[10px] tracking-widest text-white"
+            >
+              <Download className="w-4 h-4 text-primary" /> Save to Folder
+            </button>
+            <button 
+              onClick={() => setState('idle')}
+              className="px-6 py-3 bg-primary text-background font-black uppercase tracking-widest text-[10px] rounded-2xl hover:scale-105 transition-all"
+            >
+              New Analysis
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

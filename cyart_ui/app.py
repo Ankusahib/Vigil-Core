@@ -35,7 +35,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(id):
-    return User.query.get(int(id))
+    return db.session.get(User, int(id))
 
 # --- Global Logging Setup ---
 LOG_DIR = os.path.join(BASE_DIR, 'platform_logs')
@@ -119,7 +119,7 @@ def api_logout():
 
 def run_netforensicx(history_id, file_path):
     with app.app_context():
-        history = History.query.get(history_id)
+        history = db.session.get(History, history_id)
         if not history: return
         history.status = 'running'
         db.session.commit()
@@ -175,7 +175,7 @@ def run_netforensicx(history_id, file_path):
 
 def run_cyart_malware(history_id, file_path, original_filename):
     with app.app_context():
-        history = History.query.get(history_id)
+        history = db.session.get(History, history_id)
         if not history: return
         history.status = 'running'
         db.session.commit()
@@ -267,10 +267,6 @@ def run_cyart_malware(history_id, file_path, original_filename):
                 history.status = 'failed'
                 log_activity(f"Malware Analysis Failed: Task ID {history_id}")
                 log_crash("MalwarePipeline", f"Task ID {history_id} failed during script execution.")
-            if success:
-                history.status = 'completed'
-            else:
-                history.status = 'failed'
                 
         except Exception as e:
             history.log_output = str(e)
@@ -381,6 +377,21 @@ def api_status(history_id):
         'created_at': history.created_at.isoformat(),
         'log_output': history.log_output
     })
+
+@app.route('/api/history', methods=['GET'])
+@login_required
+def api_history():
+    histories = History.query.filter_by(user_id=current_user.id).order_by(History.created_at.desc()).all()
+    res = []
+    for h in histories:
+        res.append({
+            'id': h.id,
+            'analysis_type': h.analysis_type,
+            'file_name': h.file_name,
+            'status': h.status,
+            'created_at': h.created_at.strftime('%Y-%m-%d %H:%M')
+        })
+    return jsonify(res)
 
 # ==========================================================
 # READ-ONLY API: Serve report data to frontend (no backend changes)

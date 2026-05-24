@@ -35,7 +35,6 @@ from typing import Dict, Optional, Tuple
 def create_zeek_local_script() -> str:
     """Return content for temporary local.zeek script."""
     return (
-        "@load frameworks/intel\n"
         "@load frameworks/files/extract-all-files\n"
         "redef LogAscii::use_json = T;\n"
     )

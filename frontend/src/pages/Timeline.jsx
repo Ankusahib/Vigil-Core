@@ -1,15 +1,23 @@
-import React from 'react';
-import { History, Search, Filter, Shield, Activity, Clock, Download, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { History, Search, Filter, Shield, Activity, Clock, Download, ExternalLink, Loader2 } from 'lucide-react';
 import { cn } from '../utils/cn';
+import axios from 'axios';
 
 const Timeline = () => {
-  const historyData = [
-    { id: 'VC-8912', name: 'payload_x7.exe', type: 'Malware Scan', date: '2026-05-11 14:20', threat: 'High', score: 84 },
-    { id: 'VC-8911', name: 'capture_office_vlan.pcap', type: 'Network Scan', date: '2026-05-11 12:05', threat: 'Low', score: 12 },
-    { id: 'VC-8910', name: 'memory_dump_node_01.raw', type: 'RAM Analysis', date: '2026-05-10 18:45', threat: 'Critical', score: 98 },
-    { id: 'VC-8909', name: 'suspicious_script.ps1', type: 'Malware Scan', date: '2026-05-10 16:30', threat: 'Medium', score: 56 },
-    { id: 'VC-8908', name: 'gateway_traffic_log.csv', type: 'Network Scan', date: '2026-05-10 10:15', threat: 'None', score: 2 },
-  ];
+  const [historyData, setHistoryData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get('/api/history')
+      .then(res => {
+        setHistoryData(res.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch history:", err);
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
@@ -41,43 +49,49 @@ const Timeline = () => {
               <th className="px-6 py-4">Artifact Name</th>
               <th className="px-6 py-4">Scan Type</th>
               <th className="px-6 py-4">Timestamp</th>
-              <th className="px-6 py-4">Threat Level</th>
+              <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {historyData.map((item, i) => (
+            {loading && (
+              <tr>
+                <td colSpan={6} className="px-6 py-20 text-center">
+                  <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Loading History...</p>
+                </td>
+              </tr>
+            )}
+            {!loading && historyData.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-6 py-20 text-center opacity-50">
+                  <History className="w-8 h-8 text-slate-500 mx-auto mb-4" />
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">No previous scans found</p>
+                </td>
+              </tr>
+            )}
+            {!loading && historyData.map((item, i) => (
               <tr key={i} className="hover:bg-white/5 transition-all group">
-                <td className="px-6 py-4 text-xs font-mono text-primary font-bold">{item.id}</td>
+                <td className="px-6 py-4 text-xs font-mono text-primary font-bold">VC-{item.id}</td>
                 <td className="px-6 py-4">
                   <div className="flex flex-col">
-                    <span className="text-sm font-bold text-slate-200">{item.name}</span>
-                    <span className="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">8.2 MB</span>
+                    <span className="text-sm font-bold text-slate-200">{item.file_name}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    {item.type}
+                    {item.analysis_type}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-xs text-slate-500 font-medium">{item.date}</td>
+                <td className="px-6 py-4 text-xs text-slate-500 font-medium">{item.created_at}</td>
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 w-24 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                      <div 
-                        className={cn(
-                          "h-full rounded-full",
-                          item.score > 70 ? "bg-danger" : item.score > 40 ? "bg-warning" : "bg-success"
-                        )}
-                        style={{ width: `${item.score}%` }}
-                      />
-                    </div>
-                    <span className={cn(
-                      "text-[10px] font-black uppercase italic",
-                      item.score > 70 ? "bg-danger" : item.score > 40 ? "bg-warning" : "bg-success"
-                    )}>
-                    </span>
-                  </div>
+                  <span className={cn(
+                    "px-2 py-0.5 rounded text-[10px] font-black uppercase italic border",
+                    item.status === 'completed' ? "bg-success/10 text-success border-success/20" : 
+                    item.status === 'failed' ? "bg-danger/10 text-danger border-danger/20" : "bg-warning/10 text-warning border-warning/20"
+                  )}>
+                    {item.status}
+                  </span>
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -101,7 +115,7 @@ const Timeline = () => {
             <Shield size={24} />
           </div>
           <div>
-            <div className="text-2xl font-black italic text-white tracking-tighter">1,254</div>
+            <div className="text-2xl font-black italic text-white tracking-tighter">{historyData.length}</div>
             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Scans Conducted</div>
           </div>
         </div>
@@ -110,8 +124,8 @@ const Timeline = () => {
             <Activity size={24} />
           </div>
           <div>
-            <div className="text-2xl font-black italic text-white tracking-tighter">42</div>
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Threats Detected</div>
+            <div className="text-2xl font-black italic text-white tracking-tighter">{historyData.filter(i => i.status === 'failed').length}</div>
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Failed Scans</div>
           </div>
         </div>
         <div className="glass-card rounded-2xl p-6 flex items-center gap-6">
