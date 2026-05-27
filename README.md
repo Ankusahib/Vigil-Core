@@ -78,6 +78,16 @@ sudo systemctl status redis-server
 
 Follow these exact steps to deploy and utilize the VigilCore platform from start to finish.
 
+### Prerequisites
+1. **Python 3.10+**
+2. **Node.js 18+** 
+3. **Redis Server**
+4. **System Build Dependencies** (Required for forensic packages and Redis):
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y build-essential libfuzzy-dev python3-dev redis-server
+   ```
+
 ### Phase 1: Installation & Setup
 1. **Clone the Repository**:
    ```bash
@@ -106,12 +116,12 @@ Use the unified launcher to start both the Python backend and React frontend sim
 ```bash
 python3 run_platform.py
 ```
-- The **Frontend Command Center** will open at `http://localhost:5173`
-- The **Backend API** will run at `http://localhost:5000`
+- The unified **VigilCore Command Center** will be accessible at: **`http://localhost:5000`** (or `http://127.0.0.1:5000`).
+- Note: This launcher automatically builds the production frontend (`npm run build`) and serves it via the Flask backend natively, meaning you do not need to run a separate Node server.
 
 ### Phase 3: Platform Operation & Analysis
 1. **Authentication (Login/Registration)**: 
-   - Upon accessing `http://localhost:5173`, you will be greeted by the secure Authentication portal.
+   - Upon accessing `http://localhost:5000`, you will be greeted by the secure Authentication portal.
    - **Register** a new analyst account, or **Login** with your existing credentials to access the SOC Dashboard.
 2. **Navigate the Command Center**: 
    - Once logged in, use the sidebar to select your desired forensic module: **Malware Forensics** or **Network Forensics**.

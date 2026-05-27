@@ -41,6 +41,7 @@ const NetworkScan = () => {
   const [progress, setProgress] = useState(0);
   const [taskId, setTaskId] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   
   // Artifacts data
   const [attackStory, setAttackStory] = useState('');
@@ -207,18 +208,40 @@ const NetworkScan = () => {
     }
   };
 
-  const downloadAsPDF = () => {
-    import('html2pdf.js').then((html2pdf) => {
+  const downloadAsPDF = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+
       const element = document.getElementById('report-container');
-      const opt = {
-        margin: 0.5,
-        filename: `network_report_${file?.name || 'scan'}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-      };
-      html2pdf.default().set(opt).from(element).save();
-    });
+      element.classList.remove('animate-in', 'fade-in');
+
+      const canvas = await html2canvas(element, {
+        scale: 1, // Safe scale to prevent Error 4 memory limits
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#0a0c10',
+        windowWidth: 1200
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.8);
+      
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`network_report_${file?.name || 'scan'}.pdf`);
+
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+    } finally {
+      setIsGeneratingPdf(false);
+      document.getElementById('report-container')?.classList.add('animate-in', 'fade-in');
+    }
   };
 
   if (state === 'result') {
@@ -232,9 +255,11 @@ const NetworkScan = () => {
           <div className="flex gap-3">
             <button 
               onClick={() => downloadAsPDF()}
-              className="flex items-center gap-2 px-6 py-3 bg-danger text-background font-black uppercase tracking-widest text-[10px] rounded-2xl hover:scale-105 transition-all"
+              disabled={isGeneratingPdf}
+              className="flex items-center gap-2 px-6 py-3 bg-danger text-background font-black uppercase tracking-widest text-[10px] rounded-2xl hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100"
             >
-              <Download className="w-4 h-4 text-white" /> Download PDF
+              {isGeneratingPdf ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Download className="w-4 h-4 text-white" />} 
+              {isGeneratingPdf ? 'Processing...' : 'Download PDF'}
             </button>
             <button 
               onClick={() => downloadReportToFolder({ attackStory, hostProfiles, incidents, stats, iocs }, `network_report_${file?.name || 'scan'}.json`)}
@@ -280,9 +305,10 @@ const NetworkScan = () => {
             <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
               <PieChartIcon className="w-3 h-3 text-primary" /> Protocol Distribution
             </h3>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
                 <Pie
+                  isAnimationActive={false}
                   data={chartData.protocols}
                   cx="50%"
                   cy="45%"
@@ -308,9 +334,10 @@ const NetworkScan = () => {
             <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
               <Server className="w-3 h-3 text-success" /> Service Analysis
             </h3>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
                 <Pie
+                  isAnimationActive={false}
                   data={chartData.services}
                   cx="50%"
                   cy="45%"
@@ -335,7 +362,7 @@ const NetworkScan = () => {
             <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
               <BarChart3 className="w-3 h-3 text-warning" /> Top Target Ports
             </h3>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={chartData.ports} layout="vertical" margin={{ left: 10, right: 30 }}>
                 <XAxis type="number" hide />
                 <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={9} width={60} />
@@ -366,7 +393,7 @@ const NetworkScan = () => {
               <ShieldAlert className="w-4 h-4 text-danger" /> High-Severity Incidents
             </h3>
             <div className="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
-              {(incidents || []).map((inc, i) => (
+              {(incidents || []).slice(0, 50).map((inc, i) => (
                 <div key={i} className="p-4 bg-white/5 border border-white/5 rounded-xl space-y-2 border-l-2 border-danger/50">
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] font-black text-danger uppercase italic">{inc.severity} Threat</span>
@@ -388,6 +415,11 @@ const NetworkScan = () => {
                   </div>
                 </div>
               ))}
+              {incidents && incidents.length > 50 && (
+                <div className="text-center py-4 opacity-50">
+                  <p className="text-[9px] font-bold italic text-slate-400">* Showing top 50 critical incidents. Export JSON for full dataset.</p>
+                </div>
+              )}
               {(!incidents || incidents.length === 0) && (
                 <div className="text-center py-10 opacity-30">
                   <Activity className="w-10 h-10 mx-auto mb-2" />
@@ -404,7 +436,7 @@ const NetworkScan = () => {
               <Server className="w-4 h-4 text-accent" /> Network Host Roles
             </h3>
             <div className="grid grid-cols-1 gap-4 overflow-y-auto max-h-[400px] custom-scrollbar pr-2">
-              {Object.entries(hostProfiles || {}).map(([ip, profile], i) => (
+              {Object.entries(hostProfiles || {}).slice(0, 50).map(([ip, profile], i) => (
                 <div key={i} className="p-4 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between border-l-2 border-primary/20">
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
@@ -426,6 +458,9 @@ const NetworkScan = () => {
                   </div>
                 </div>
               ))}
+              {Object.entries(hostProfiles || {}).length > 50 && (
+                <div className="text-[9px] font-bold text-slate-500 italic text-center pt-2">* Showing top 50 hosts. Save to Folder to export full JSON dataset.</div>
+              )}
             </div>
           </div>
 
@@ -434,7 +469,7 @@ const NetworkScan = () => {
               <Zap className="w-4 h-4 text-warning" /> YARA Forensic Hits
             </h3>
             <div className="space-y-4 overflow-y-auto max-h-[400px] custom-scrollbar pr-2">
-              {iocs.filter(ioc => ioc.yara_match).map((hit, i) => (
+              {iocs.filter(ioc => ioc.yara_match).slice(0, 50).map((hit, i) => (
                 <div key={i} className="p-4 bg-black/30 border border-white/5 rounded-xl space-y-2 border-l-2 border-warning">
                   <div className="flex justify-between items-center">
                     <span className="text-[9px] font-black text-warning uppercase">Rule: {hit.yara_match}</span>
@@ -451,6 +486,9 @@ const NetworkScan = () => {
                 <div className="text-center py-20 opacity-20 italic text-[10px] uppercase font-black tracking-widest">
                   No YARA Signatures Matched
                 </div>
+              )}
+              {iocs.filter(ioc => ioc.yara_match).length > 50 && (
+                <div className="text-[9px] font-bold text-slate-500 italic text-center pt-2">* Showing top 50 YARA hits. Save to Folder to export full JSON dataset.</div>
               )}
             </div>
           </div>

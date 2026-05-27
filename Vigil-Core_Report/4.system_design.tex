@@ -1,0 +1,36 @@
+\chapter{System Design}
+
+\section{System Architecture}
+The Vigil-Core platform is designed using a decoupled client-server architecture, allowing the frontend and backend to scale and be maintained independently. The backend acts as an API provider, while the frontend handles all state management and data visualization.
+
+\subsection{Backend Architecture}
+The backend consists of two primary engines:
+\begin{itemize}
+    \item \textbf{cyart\_malware:} A specialized module for static and dynamic analysis of executables. It integrates YARA rule matching, fuzzy hashing (\texttt{pydeep/ssdeep}), and payload extraction routines.
+    \item \textbf{NetForensicX:} A network analysis module that parses PCAP files to extract host profiles, identify suspicious connections, and trace data flow using libraries like \texttt{libpcap}.
+\end{itemize}
+These modules expose their capabilities via RESTful API endpoints. The data flow is structured as a 5-phase pipeline: 
+\textbf{Dump Validator $\rightarrow$ Region Scanner $\rightarrow$ Payload Extractor $\rightarrow$ IOC Extractor $\rightarrow$ Report Generator}.
+
+\subsection{Frontend UI Architecture and Design}
+A significant portion of the project focused on designing a robust UI architecture for the React-based frontend. The primary goal was to transition from terminal-based output to a manager-ready dashboard.
+
+\subsubsection{Structural Blueprint}
+The UI was meticulously mapped out using wireframes and flow diagrams, defining the following elements:
+\begin{itemize}
+    \item \textbf{Page Layouts:} Segregated modules for \textit{Malware Analysis} and \textit{Network Forensics}.
+    \item \textbf{Chart Integration:} Utilizing \texttt{Recharts} for dynamic rendering of entropy graphs, protocol distributions, and YARA match statistics.
+    \item \textbf{API Mapping:} Defining exactly how the complex JSON responses from the Flask/FastAPI backend map to specific UI components, ensuring all visualizations rely on real, live data rather than mocks.
+    \item \textbf{User Journey:} Streamlining the flow from file upload $\rightarrow$ scan initiation $\rightarrow$ real-time result viewing $\rightarrow$ final report download.
+\end{itemize}
+
+\subsubsection{Latency Optimization Planning}
+To maintain a responsive interface when handling massive forensic datasets, the architecture incorporated several optimization strategies:
+\begin{itemize}
+    \item \textbf{Lazy Loading:} Deferring the rendering of heavy chart components until they enter the user's viewport.
+    \item \textbf{Minimal API Payloads:} Designing the backend endpoints to deliver only the necessary data points required for initial rendering, fetching deeper details on-demand.
+    \item \textbf{Asynchronous Fetching:} Ensuring that data retrieval happens in the background without blocking the main UI thread, resulting in a smooth user experience.
+\end{itemize}
+
+\section{Database Design}
+The system utilizes SQLite via SQLAlchemy for managing persistent data, such as user profiles, authentication tokens, and scan history. The database schema links users to their specific scan reports, allowing for historical tracking and auditing of forensic investigations.

@@ -79,3 +79,32 @@
     grid-template-columns: 80px 1fr;
   }
 }
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background-color: #0a0c10 !important;
+    color: #e2e8f0 !important;
+  }
+  
+  /* Disable sidebar grid layout and hide unnecessary UI */
+  .workspace-grid {
+    display: block !important;
+  }
+  aside, nav, button {
+    display: none !important;
+  }
+  
+  /* Un-constrain scrolling containers so everything prints */
+  .custom-scrollbar {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Ensure charts don't get cut in half */
+  .glass-card, .chart-container {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}

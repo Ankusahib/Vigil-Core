@@ -1,0 +1,36 @@
+\chapter{Implementation}
+
+\section{Backend Implementation and Configuration}
+The core logic of Vigil-Core resides in Python scripts that interface with lower-level system utilities.
+
+\subsection{Linux Compatibility Setup}
+Initially developed on a Windows environment, a critical implementation phase involved porting and validating the backend for Linux systems. This required identifying and installing missing system-level dependencies. Essential packages included:
+\begin{itemize}
+    \item \texttt{libpcre3}: Necessary for the backend's regex and YARA compilation engines.
+    \item \texttt{libpcap}: Required for the \texttt{NetForensicX} module to perform deep packet inspection.
+    \item \texttt{python3-dev}: Needed to compile Python headers for various forensic libraries.
+\end{itemize}
+By resolving these dependencies, Vigil-Core was successfully deployed on standard Linux distributions, enabling deployment in diverse SOC environments.
+
+\subsection{Advanced Detection Mechanisms}
+\textbf{YARA Integration:} YARA rules were integrated directly into the scanning pipeline. The implementation involved loading rule files, applying them against the binary streams of uploaded samples, and formatting the matched rules into the unified JSON output. 
+
+\textbf{Fuzzy Hashing:} To counteract malware evasion techniques (like slight code obfuscation or minor alterations that change the MD5 hash), fuzzy hashing was implemented using \texttt{pydeep} and \texttt{ssdeep}. This allows the platform to identify malware variants based on structural similarity rather than exact cryptographic matches.
+
+\subsection{Pipeline Robustness and Large File Handling}
+During implementation, handling large forensic files (such as raw memory dumps) proved challenging. The \textit{Dump Validator} and \textit{Region Scanner} phases were re-engineered to utilize \textbf{chunked processing}. Instead of loading an entire file into RAM, the system reads the file in small, manageable chunks. This modification was crucial for the successful ingestion of files exceeding several gigabytes.
+
+\section{Frontend Implementation and Joint Debugging}
+The frontend was constructed using React and Vite, utilizing Tailwind CSS for styling and Recharts for data visualization. 
+
+\subsection{API Integration and State Management}
+Implementing the planned UI architecture required careful state management to handle asynchronous operations. The \texttt{fetch} API was used to communicate with the backend, with comprehensive error handling to display user-friendly messages during network failures or invalid uploads.
+
+\subsection{Joint Debugging and Stabilization}
+The transition from architectural design to implementation involved rigorous joint debugging sessions. Common issues encountered and resolved included:
+\begin{itemize}
+    \item \textbf{API Response Format Mismatches:} Adjusting the frontend parsers when the backend JSON structure differed from the expected model.
+    \item \textbf{Chart Rendering Issues:} Fixing bugs where Recharts failed to render due to NaN values or missing keys in the data payload.
+    \item \textbf{CORS and Loading States:} Resolving Cross-Origin Resource Sharing (CORS) blocks during API calls and ensuring that loading spinners correctly displayed during long-running forensic scans.
+\end{itemize}
+Through collaborative root-cause analysis and immediate remediation, the frontend was stabilized, ensuring that all data displayed is accurate and derived directly from the live backend analysis.

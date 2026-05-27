@@ -1,0 +1,23 @@
+\chapter{Introduction}
+
+\section{Background and Motivation}
+In the modern digital landscape, the frequency and sophistication of cyberattacks have reached unprecedented levels. Security Operations Centers (SOCs) and forensic analysts are constantly inundated with massive volumes of data, from suspicious executables to massive network packet captures. Traditionally, analysts rely on a fragmented ecosystem of command-line tools and disparate software to perform malware analysis and network forensics. This fragmentation leads to inefficiencies, delayed incident response, and a steep learning curve for new analysts. The motivation behind Vigil-Core is to build a unified, automated platform that consolidates these analytical capabilities into a single, intuitive interface, providing actionable intelligence rapidly and accurately.
+
+\section{Problem Statement}
+Existing open-source forensic tools often lack a cohesive graphical user interface (GUI) and require extensive manual configuration. Furthermore, correlating data between malware behavior and network activity is a manual and error-prone process. There is a critical need for a centralized platform that can automate the ingestion, analysis, and reporting of forensic artifacts (such as YARA matches, payload extraction, and PCAP analysis) while presenting the results in a manager-ready, visually accessible format.
+
+\section{Project Objectives}
+The primary objectives of the Vigil-Core project are:
+\begin{itemize}
+    \item To develop a robust Python backend capable of performing deep forensic analysis on malware and network captures.
+    \item To design and implement a modern, low-latency React-based frontend dashboard for visualizing forensic data.
+    \item To ensure cross-platform compatibility, specifically optimizing the backend for Linux environments by managing critical dependencies.
+    \item To validate the forensic pipeline against large datasets (e.g., stress testing with 8GB dumps) using chunked processing to prevent system crashes.
+    \item To integrate advanced detection mechanisms like YARA rules and fuzzy hashing to accurately identify malware variants.
+\end{itemize}
+
+\section{Scope and Limitations}
+The scope of Vigil-Core encompasses static malware analysis, YARA rule matching, payload extraction, and network forensics (packet analysis). The frontend supports artifact exploration, user authentication, and automated PDF report generation. However, the current iteration is limited to static and localized dynamic analysis; it does not yet include a fully isolated, cloud-based interactive sandbox for safely detonating highly evasive zero-day malware.
+
+\section{Overview of Methodology}
+The project follows an Agile development methodology, divided into backend module development (\texttt{cyart\_malware} and \texttt{NetForensicX}), API integration (Flask/FastAPI), and frontend UI/UX design (React). Rigorous testing phases were conducted, focusing on Linux compatibility, end-to-end data pipeline validation, and joint debugging of UI-API latency issues to achieve an optimal user experience.

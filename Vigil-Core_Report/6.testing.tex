@@ -1,0 +1,36 @@
+\chapter{Testing}
+
+\section{Testing Strategy}
+The testing phase for Vigil-Core was comprehensive, ensuring that the platform was both accurate in its forensic analysis and robust under heavy loads. The testing strategy encompassed unit testing for individual backend modules, integration testing for the API-UI connection, and rigorous stress testing.
+
+\section{Specific Testing Contributions and Validation}
+
+\subsection{YARA Rules Testing and Validation}
+A major component of the backend validation involved the strict testing of YARA rules against known sample files. The testing process involved:
+\begin{itemize}
+    \item Uploading a variety of malware samples and benign executables.
+    \item Verifying that the designated YARA rules triggered correctly on malicious samples.
+    \item Actively identifying and filtering out \textit{false positives} (instances where benign files incorrectly triggered a rule).
+    \item Flagging these false positives to the team for rule refinement, ensuring the overall accuracy of the detection engine.
+\end{itemize}
+
+\subsection{Stress Testing with Large Datasets}
+To guarantee the system's viability in real-world scenarios, rigorous stress testing was conducted. A critical test involved processing an \textbf{8GB memory dump}. 
+\begin{itemize}
+    \item \textbf{Initial Failure:} The first attempt resulted in a system hang as the application attempted to load the entire dump into memory.
+    \item \textbf{Resolution Validation:} Following the implementation of chunked processing, the 8GB dump was re-tested. The platform successfully ingested, scanned, and processed the file without exceeding memory limits. This confirmed that the platform can reliably handle large, real-world forensic artifacts.
+\end{itemize}
+
+\subsection{End-to-End Pipeline Validation}
+The complete 5-phase data pipeline was subjected to end-to-end testing to ensure data integrity at every step. The flow was validated as follows:
+\textbf{Dump Validator} $\rightarrow$ \textbf{Region Scanner} $\rightarrow$ \textbf{Payload Extractor} $\rightarrow$ \textbf{IOC Extractor} $\rightarrow$ \textbf{Report Generator}.
+Testing confirmed that all modules were properly interconnected, data flowed seamlessly without breaking or losing context, and the final consolidated report accurately reflected the findings from all previous phases.
+
+\section{Frontend and UI Testing}
+The UI was tested to ensure the architectural plans were successfully realized. This involved:
+\begin{itemize}
+    \item Verifying that all charts and graphs rendered correctly using real data from the Flask API, confirming the decision to avoid mock data.
+    \item Testing the lazy loading and asynchronous data fetching mechanisms.
+    \item Confirming the resolution of previously identified bugs (e.g., CORS issues, loading state anomalies) through collaborative debugging efforts.
+\end{itemize}
+The rigorous testing across both Linux and Windows environments confirmed the platform's stability, cross-platform readiness, and operational efficiency.

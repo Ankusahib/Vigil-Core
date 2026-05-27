@@ -1,0 +1,16 @@
+\chapter{Literature Review}
+
+\section{Overview of Existing Forensic Tools}
+The field of digital forensics relies heavily on established tools for both network and malware analysis. 
+
+\subsection{Network Forensics}
+Tools like Wireshark and tcpdump have long been the industry standard for network packet capture and analysis. While highly effective, they present data in a raw, granular format that can be overwhelming. Vigil-Core's \texttt{NetForensicX} module aims to abstract this complexity, automatically extracting high-level insights such as host profiles and suspicious connection patterns without requiring manual packet filtering.
+
+\subsection{Malware Analysis}
+For malware analysis, frameworks like Cuckoo Sandbox provide comprehensive dynamic analysis. However, setting up and maintaining these environments is resource-intensive. Static analysis tools like PEiD or string extractors require manual invocation. Vigil-Core integrates these static and semi-dynamic capabilities natively. The integration of YARA rules allows for rapid classification of files based on textual or binary patterns, a standard practice in the industry.
+
+\section{The Need for Integration}
+Recent literature emphasizes the "Security Information and Event Management (SIEM)" approach, where data from multiple sources is aggregated. Vigil-Core adopts this philosophy at the forensic level. By providing a unified dashboard where an analyst can transition seamlessly from network artifacts to malware payloads, the platform reduces the "time-to-insight."
+
+\section{Advancements in Detection Techniques}
+Traditional signature-based detection is increasingly ineffective against polymorphic malware. Literature suggests the use of fuzzy hashing techniques (such as ssdeep) to identify similarities between files. This project incorporates these advanced detection methodologies to ensure robust malware identification, identifying variants that would bypass standard MD5/SHA256 hash checks.
