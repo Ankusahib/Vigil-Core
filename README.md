@@ -2,103 +2,177 @@
 
 **VigilCore** is an enterprise-grade, comprehensive cybersecurity analysis platform featuring high-fidelity Network and Malware Forensic pipelines. Designed for Security Operations Centers (SOC) and Incident Response teams, it provides real-time threat detection, advanced telemetry correlation, and professional intelligence-driven dashboards.
 
-## 🚀 Key Features
+The platform bridges the gap between raw, complex forensic artifacts and manager-ready, actionable intelligence through an intuitive React-based Command Center.
+
+---
+
+## 🚀 Core Forensic Pipelines in Detail
+
+To provide unparalleled visibility into cyber threats, VigilCore employs two highly specialized forensic engines.
 
 ### 1. Malware Forensics Pipeline (CyArt Malware)
-A deeply optimized, multi-stage static and dynamic analysis engine for binaries, scripts, and memory dumps.
-* **Smart Domain Reputation Engine**: Extracts network IOCs and scores them using heuristics and entropy analysis in milliseconds.
-* **Integrated Threat Intelligence**: Automatically cross-references suspicious artifacts with **AlienVault OTX**, **AbuseIPDB**, and **MalwareBazaar**.
-* **Redis Caching Layer**: Ensures O(1) instantaneous lookups for previously analyzed IPs, hashes, and domains, drastically reducing API rate limits and dropping scan times from hours to minutes.
-* **YARA Rule Integration**: Performs both full-file validation and deep carved payload scanning against massive sets of enterprise YARA signatures.
-* **Payload Extraction**: Dynamically carves hidden executables, shellcode stubs, and encrypted regions from larger dumps.
+The Malware Forensics engine is a deeply optimized, multi-stage static and dynamic analysis pipeline designed to tear apart suspicious files, binaries, scripts, and memory dumps to uncover malicious intent.
+
+**What it scans and extracts in detail:**
+* **Deep File Profiling & Entropy Analysis:** Calculates Shannon entropy across file sections to detect packed, obfuscated, or encrypted payloads. Extracts rich metadata, PE/ELF headers, imported/exported APIs, and compilation timestamps.
+* **Intelligent IOC Extraction:** Recursively scrapes embedded strings, decoded buffers, and configurations to extract hardcoded IP addresses, malicious domains, URLs, and registry keys used by the malware for Command and Control (C2).
+* **Massive YARA Signature Matching:** Cross-references the entire file structure, as well as carved memory segments, against thousands of enterprise-grade YARA rules to identify known malware families (e.g., Ransomware, RATs, Emotet, Cobalt Strike).
+* **Dynamic Payload Carving:** Automatically identifies and extracts hidden MZ/PE executables, injected shellcode stubs, and encrypted ZIP archives hidden within the parent file or memory dump.
+* **Cryptographic Hashing & Fingerprinting:** Generates MD5, SHA-1, SHA-256, and fuzzy hashes (SSDEEP) for immediate cross-referencing with global threat databases.
 
 ### 2. Network Forensics Pipeline (NetForensicX)
-A massive-scale PCAP analysis engine capable of processing 20GB+ capture files natively.
-* **Deep Packet Inspection**: Leverages Zeek and Suricata rulesets to reconstruct encrypted traffic flows, fingerprint JA3 SSL/TLS anomalies, and detect multi-protocol brute-forcing.
-* **SQLite-Backed State Management**: Streams large-scale data using chunked generators, preventing RAM overflow and system crashes.
-* **Attack Narrative Generation**: Correlates disparate network events into a cohesive, human-readable Cyber Kill Chain "Attack Story".
+The Network Forensics engine is a massive-scale PCAP (Packet Capture) analysis system capable of processing gigabytes of network traffic natively without crashing the host system. It reconstructs the entire network narrative of an attack.
 
-### 3. Unified SOC Dashboard (React + Flask)
-A professionally designed, highly responsive Command Center.
-* **Twin-Pie Analytics**: Visually distributes severity layers and threat categorization in real-time.
-* **Real-time Progress Observability**: Binds to Python backend streams to display `tqdm` logs directly in the UI.
-* **Hash Lookup Panels**: Provides an immediate overview of SHA-256 and MD5 fingerprints.
-* **Responsive React Architecture**: Uses Axios for seamless backend synchronization and robust Error Boundaries for zero-crash UI handling.
+**What it scans and extracts in detail:**
+* **Deep Packet Inspection (DPI) & Protocol Dissection:** Deconstructs packets across the OSI model. Analyzes HTTP/HTTPS requests, DNS queries, FTP transfers, SMB lateral movement, and SSH connections to map the attacker's footprint.
+* **Encrypted Traffic Analysis & JA3 Fingerprinting:** Identifies malicious encrypted communications without needing decryption keys by using TLS/SSL JA3/JA3S fingerprinting to spot known malicious client applications communicating with C2 servers.
+* **High-Severity Incident Generation:** Detects network anomalies, brute-force attempts, port scans, and exploitation patterns. Flags these as actionable high-severity incidents with exact timestamps, source, and destination endpoints.
+* **Automated Cyber Kill Chain "Attack Story":** Synthesizes thousands of raw packets into a cohesive, human-readable narrative. It automatically explains how the attacker breached the perimeter, what internal assets they moved laterally to, and what data they attempted to exfiltrate.
+* **Host Risk Profiling:** Profiles every internal IP address observed in the traffic, assigning an "Infection Risk Score" and labeling compromised assets (e.g., "Patient Zero").
 
 ---
 
 ## 🛠️ Technology Stack
-* **Frontend**: React.js, Tailwind CSS, Recharts, Vite (Dynamic UI routing and visualization).
-* **Backend**: Python 3, Flask (REST API, Subprocess Management).
-* **Forensic Engines**: YARA, Volatility (Memory extraction), Zeek/Suricata (Network).
-* **State & Caching**: Redis (Threat Intel caching), SQLite (Large-scale data chunking).
+* **Frontend Command Center**: React.js, Tailwind CSS, Recharts, Vite (for dynamic UI routing and real-time visualization).
+* **Backend Engine**: Python 3, Flask (REST API, Asynchronous Subprocess Management).
+* **State & Caching Architecture**: 
+  * **Redis**: Used as an incredibly fast, O(1) in-memory caching layer for Threat Intelligence. It instantly remembers previously analyzed IPs and Hashes, drastically reducing API rate limits and dropping scan times from hours to minutes.
+  * **SQLite**: Used for chunked, large-scale data streaming, ensuring 20GB+ PCAPs don't overflow system RAM.
 
 ---
 
-## ⚙️ Installation & Execution Plan
+## 📂 Supported File Ingestion
 
-### Prerequisites
-1. **Python 3.10+** (with `pip` and `venv`)
-2. **Node.js 18+** (with `npm` or `yarn`)
-3. **Redis Server** (Running locally on default port `6379`)
-4. **Git**
+You can upload specific file types via the dashboard depending on the analysis you want to perform:
 
-### Phase 1: Environment Setup
-1. Clone the repository:
+- **CyArt Malware Pipeline**: `.exe`, `.dll`, `.bin`, `.sh`, `.py`, `.bat`, `.vbs`, and raw memory dumps (`.mem`, `.mddramimage`).
+- **NetForensicX Pipeline**: `.pcap`, `.pcapng` capture files.
+
+---
+
+## 🔑 API Keys (Zero-Configuration)
+**NO API KEYS ARE REQUIRED** to use the core functionality of VigilCore. The platform operates perfectly out-of-the-box natively and autonomously. While the codebase is structured to support external Threat Intelligence platforms (like VirusTotal or AlienVault), the core forensic analysis, payload extraction, and YARA matching run entirely locally without requiring any paid subscriptions or keys.
+
+---
+
+## ⚡ Resolving Server & Redis Issues
+
+Because VigilCore relies on **Redis** for ultra-fast performance, the Redis server must be running. If the platform fails to start or the dashboard shows backend errors (e.g., "Connection Refused", "Pipeline Failed"), the Redis service is likely inactive.
+
+**How to resolve Redis issues:**
+Open your terminal and run the following commands to start and verify Redis:
+```bash
+# Start the Redis Server
+sudo systemctl start redis-server
+
+# (Optional) Enable Redis to start automatically on system boot
+sudo systemctl enable redis-server
+
+# Check that Redis is running (should say "active (running)")
+sudo systemctl status redis-server
+```
+
+---
+
+## ⚙️ Detailed Operational Workflow (How to Use)
+
+Follow these exact steps to deploy and utilize the VigilCore platform from start to finish.
+
+### Phase 1: Installation & Setup
+1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/vigilcore-platform.git
-   cd vigilcore-platform
+   git clone https://github.com/yourusername/Vigil-Core.git
+   cd Vigil-Core
    ```
-2. Set up the Python virtual environment:
+2. **Setup Python Virtual Environment**:
    ```bash
    python3 -m venv env
    source env/bin/activate
    pip install -r requirements.txt
    ```
-3. Set up the Frontend:
+3. **Setup Frontend Dependencies**:
    ```bash
    cd frontend
    npm install
    cd ..
    ```
-4. Verify Redis is active:
+4. **Ensure Redis is Active**:
    ```bash
-   sudo systemctl status redis-server
+   sudo systemctl start redis-server
    ```
 
-### Phase 2: Configuration & API Keys
-To enable the full Threat Intel Chain across both Network and Malware pipelines, export your API keys in your terminal environment:
-```bash
-export VT_API_KEY="your_virustotal_key_here"
-export OTX_API_KEY="your_alienvault_key_here"
-export ABUSEIPDB_API_KEY="your_abuseipdb_key_here"
-```
-*(Note: MalwareBazaar requires no key and functions automatically. The VT_API_KEY is specifically utilized by the Network Forensics pipeline).*
-
-### Phase 3: Launching the Platform
-The platform uses a unified launcher that automatically spins up both the React development server and the Flask backend asynchronously.
-
+### Phase 2: Launch the Platform
+Use the unified launcher to start both the Python backend and React frontend simultaneously:
 ```bash
 python3 run_platform.py
 ```
-* **Frontend**: `http://localhost:5173`
-* **Backend**: `http://localhost:5000`
+- The **Frontend Command Center** will open at `http://localhost:5173`
+- The **Backend API** will run at `http://localhost:5000`
 
-### Phase 4: Operation
-1. Navigate to the **Malware** or **Network** Forensic tabs.
-2. Upload a `.mddramimage` memory dump or `.pcap` capture file.
-3. The platform will spawn backend subprocesses and dynamically stream logs to the UI.
-4. Upon completion, high-fidelity metrics, charts, and YARA/IOC tables will populate automatically.
+### Phase 3: Platform Operation & Analysis
+1. **Authentication (Login/Registration)**: 
+   - Upon accessing `http://localhost:5173`, you will be greeted by the secure Authentication portal.
+   - **Register** a new analyst account, or **Login** with your existing credentials to access the SOC Dashboard.
+2. **Navigate the Command Center**: 
+   - Once logged in, use the sidebar to select your desired forensic module: **Malware Forensics** or **Network Forensics**.
+3. **Ingest Evidence**: 
+   - Click the upload area to select your evidence file (e.g., a suspicious `.exe` or a captured `.pcap`).
+4. **Initiate Pipeline**: 
+   - Click the **Launch Forensic Engine** button. You will immediately see live logs streaming directly from the backend as the engines deconstruct the file.
+5. **Analyze Manager-Ready Results**: 
+   - Once complete, the dashboard will transition to the Results view, populating interactive pie charts, YARA signature matches, IOC tables, and the automated Cyber Kill Chain attack story.
+6. **Export Professional Reports**: 
+   - Click **Download PDF** to generate a high-resolution, manager-ready report document.
+   - Click **Save to Folder** to export the raw, machine-readable JSON artifacts for integration with other SIEM tools.
 
 ---
 
-## 🛡️ Architecture & Data Flow
-1. **Upload**: React frontend sends multipart-form data to Flask `/api/upload`.
-2. **Orchestration**: `app.py` triggers `run_cyart_malware()` or `run_network_pipeline()` via asynchronous subprocesses, tracking PID and logging progress to SQLite (`instance/app.db`).
-3. **Analysis**: 
-   - *Malware*: `dump_validator.py` -> `region_scanner.py` -> `payload_extractor.py` -> `ioc_extractor.py` -> `report_generator.py`
-   - *Network*: Ingests PCAP, streams to SQLite, enriches via Suricata/Zeek logs, applies threat models.
-4. **Reporting**: JSON artifacts are securely generated in `./reports/` and fetched via API to hydrate React visual components.
+## 🛡️ Architecture & Data Flow Diagram
+
+The following diagram illustrates exactly how evidence moves through the VigilCore ecosystem:
+
+```mermaid
+graph TD
+    A[Analyst Login/Registration] --> B[React Frontend Dashboard]
+    B -->|Uploads .exe / .pcap| C[Flask Backend /api/upload]
+    
+    C --> D{Analysis Route}
+    
+    %% Malware Route
+    D -->|Malware Binary/Memory| E[CyArt Malware Engine]
+    E --> E1[Entropy & Header Profiling]
+    E1 --> E2[String & IOC Extraction]
+    E2 --> E3[Massive YARA Scanning]
+    E3 --> E4[Dynamic Payload Carving]
+    
+    %% Network Route
+    D -->|Network Traffic| F[NetForensicX Engine]
+    F --> F1[Deep Packet Inspection]
+    F1 --> F2[JA3 TLS Fingerprinting]
+    F2 --> F3[Anomaly & Lateral Movement Detection]
+    F3 --> F4[Attack Story Generation]
+    
+    %% Caching Layer
+    E2 --> G[(Redis Threat Cache)]
+    F2 --> G
+    
+    %% Reporting
+    E4 --> H[JSON Report Generators]
+    F4 --> H
+    
+    H --> I[(SQLite State Database)]
+    I --> B
+    
+    B --> J[Visual Interactive Analytics]
+    J --> K[Export Manager-Ready PDF]
+    J --> L[Export Raw JSON Artifacts]
+    
+    style A fill:#4b5563,color:#fff
+    style B fill:#3b82f6,color:#fff
+    style C fill:#10b981,color:#fff
+    style G fill:#ef4444,color:#fff
+    style K fill:#8b5cf6,color:#fff
+```
 
 ---
 
