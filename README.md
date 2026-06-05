@@ -6,7 +6,7 @@ The platform bridges the gap between raw, complex forensic artifacts and manager
 
 ---
 
-## 🚀 Core Forensic Pipelines in Detail
+##  Core Forensic Pipelines in Detail
 
 To provide unparalleled visibility into cyber threats, VigilCore employs two highly specialized forensic engines.
 
@@ -32,7 +32,7 @@ The Network Forensics engine is a massive-scale PCAP (Packet Capture) analysis s
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 * **Frontend Command Center**: React.js, Tailwind CSS, Recharts, Vite (for dynamic UI routing and real-time visualization).
 * **Backend Engine**: Python 3, Flask (REST API, Asynchronous Subprocess Management).
 * **State & Caching Architecture**: 
@@ -41,7 +41,7 @@ The Network Forensics engine is a massive-scale PCAP (Packet Capture) analysis s
 
 ---
 
-## 📂 Supported File Ingestion
+##  Supported File Ingestion
 
 You can upload specific file types via the dashboard depending on the analysis you want to perform:
 
@@ -50,12 +50,12 @@ You can upload specific file types via the dashboard depending on the analysis y
 
 ---
 
-## 🔑 API Keys (Zero-Configuration)
+## API Keys (Zero-Configuration)
 **NO API KEYS ARE REQUIRED** to use the core functionality of VigilCore. The platform operates perfectly out-of-the-box natively and autonomously. While the codebase is structured to support external Threat Intelligence platforms (like VirusTotal or AlienVault), the core forensic analysis, payload extraction, and YARA matching run entirely locally without requiring any paid subscriptions or keys.
 
 ---
 
-## ⚡ Resolving Server & Redis Issues
+##  Resolving Server & Redis Issues
 
 Because VigilCore relies on **Redis** for ultra-fast performance, the Redis server must be running. If the platform fails to start or the dashboard shows backend errors (e.g., "Connection Refused", "Pipeline Failed"), the Redis service is likely inactive.
 
@@ -74,7 +74,7 @@ sudo systemctl status redis-server
 
 ---
 
-## ⚙️ Detailed Operational Workflow (How to Use)
+## Detailed Operational Workflow (How to Use)
 
 Follow these exact steps to deploy and utilize the VigilCore platform from start to finish.
 
@@ -104,6 +104,7 @@ Follow these exact steps to deploy and utilize the VigilCore platform from start
    ```bash
    cd frontend
    npm install
+   npm run build
    cd ..
    ```
 4. **Ensure Redis is Active**:
@@ -137,7 +138,7 @@ python3 run_platform.py
 
 ---
 
-## 🛡️ Architecture & Data Flow Diagram
+## Architecture & Data Flow Diagram
 
 The following diagram illustrates exactly how evidence moves through the VigilCore ecosystem:
 
@@ -186,5 +187,5 @@ graph TD
 
 ---
 
-## 📜 License
+## License
 This is an open-source project released under the **MIT License**. You are free to use, modify, and distribute this software for educational, research, and commercial purposes. Contributions and pull requests are highly encouraged!
